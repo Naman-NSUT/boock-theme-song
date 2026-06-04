@@ -15,7 +15,5 @@
   "seed": 7,
   "max_new_tokens": 2400,
   "generation_time_s": 1105.4,
-  "warnings": [],
-  "mastered": true,
-  "mastering": "pedalboard: HPF + EQ(lowshelf/presence/air) + 2:1 glue comp + reverb + M/S widen + makeup + limiter, peak 0.95, stereo"
+  "warnings": []
 }

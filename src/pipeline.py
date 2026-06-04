@@ -11,6 +11,7 @@ from typing import Optional
 from src.preprocessing.formatter import load_request_from_json, prepare_yue_inputs
 from src.models.yue_pipeline import run_yue_inference
 from src.postprocessing.audio_processor import trim_and_fade, normalize_lufs, apply_joint_peak_ceiling
+from src.postprocessing.mastering import master
 from src.postprocessing.stem_separator import separate_stems, native_stem_paths
 from src.validation.audio_validator import validate_output_set
 from src.service.schemas import ThemeSongRequest, ThemeSongResponse
@@ -50,17 +51,25 @@ def run_pipeline(request: ThemeSongRequest, outputs_root: Optional[str] = None, 
         seed=seed,
     )
 
-    # 3. Post-process: trim to 20s, fade, normalize
+    # 3. Post-process: trim to 20s + fade, then master (EQ / glue comp / reverb /
+    #    mono->stereo widen / makeup + limiter). Falls back to LUFS normalize, then to
+    #    the trimmed mix, so a full_mix always exists.
     target_s = request.duration_ms / 1000.0
     trimmed_wav = os.path.join(task_out, "full_mix_trimmed.wav")
     trim_and_fade(raw_wav, trimmed_wav, target_s=target_s)
 
     full_mix_path = os.path.join(task_out, "full_mix.wav")
+    mastered = True
     try:
-        normalize_lufs(trimmed_wav, full_mix_path)
+        master(trimmed_wav, full_mix_path)
     except Exception as e:
-        warnings.append(f"LUFS normalization failed, using trimmed: {e}")
-        shutil.copy2(trimmed_wav, full_mix_path)
+        mastered = False
+        warnings.append(f"Mastering failed, falling back to LUFS normalize: {e}")
+        try:
+            normalize_lufs(trimmed_wav, full_mix_path)
+        except Exception as e2:
+            warnings.append(f"LUFS normalization also failed, using trimmed mix: {e2}")
+            shutil.copy2(trimmed_wav, full_mix_path)
 
     # 4. Stems. Prefer YuE's native vocoder stems (the model's own vocal/instrumental
     #    tracks) — they're higher quality than re-separating the synthetic mix with
@@ -108,6 +117,10 @@ def run_pipeline(request: ThemeSongRequest, outputs_root: Optional[str] = None, 
         "stem_source": stem_source,
         "seed": seed,
         "max_new_tokens": max_new_tokens,
+        "mastered": mastered,
+        "mastering": ("pedalboard: HPF + EQ(lowshelf/presence/air) + 2:1 glue comp + "
+                      "reverb + M/S widen + makeup + limiter, peak 0.95, stereo"
+                      if mastered else None),
         "generation_time_s": round(time.time() - t0, 1),
         "warnings": warnings,
     }

@@ -14,6 +14,7 @@ soundfile==0.13.*
 librosa==0.11.*
 scipy==1.17.*
 pydub==0.25.*
+pedalboard==0.9.*   # mastering chain (EQ, compression, reverb, limiter, stereo)
 
 # Service layer
 fastapi==0.136.*
