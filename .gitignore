@@ -1,0 +1,49 @@
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test / tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Claude Code local settings ──────────────────────────────────────────────
+.claude/
+
+# ── Large external assets (cloned / downloaded separately, see README) ──────
+# YuE upstream repo (~1.9GB, includes its own .git and xcodec weights)
+/YuE/
+
+# Original take-home bundle (contains the assignment PDF and nested settings)
+/boock_theme_song_takehome_provided_inputs/
+
+# ── Model weights / caches (never commit; auto-downloaded from HuggingFace) ──
+*.pth
+*.safetensors
+*.ckpt
+*.bin
+.cache/
+
+# ── Generated audio ─────────────────────────────────────────────────────────
+# Keep only the final deliverable stems (full_mix/vocals/instrumental + metadata)
+# under outputs/<task>/. Ignore regenerable intermediates and trimmed temp files.
+outputs/*/yue_raw/
+outputs/*/full_mix_trimmed.wav
+
+# ── OS / editor cruft ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

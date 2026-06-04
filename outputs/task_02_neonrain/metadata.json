@@ -1,0 +1,19 @@
+{
+  "task_id": "task_02_neonrain",
+  "theme_title": "Neon Rain",
+  "genre": "dark cinematic synth-pop ballad with ambient pads, restrained tabla pulse, and noir tension",
+  "emotion": "longing, tense, romantic melancholy",
+  "language": "en",
+  "vocal_style": "intimate breathy lead vocal, no artist imitation",
+  "tempo_bpm_hint": 82,
+  "target_duration_ms": 20000,
+  "actual_duration_ms": 20000,
+  "model_track": "B",
+  "stage1_model": "m-a-p/YuE-s1-7B-anneal-en-cot",
+  "stage2_model": "m-a-p/YuE-s2-1B-general",
+  "stem_source": "yue_native_vocoder_stems",
+  "seed": 42,
+  "max_new_tokens": 2400,
+  "generation_time_s": 1012.8,
+  "warnings": []
+}
