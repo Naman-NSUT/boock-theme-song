@@ -41,7 +41,11 @@ def run_pipeline(request: ThemeSongRequest, outputs_root: Optional[str] = None, 
     # track instead of collapsing to vocals-only. We then trim real content to 20s.
     # `seed` controls the sampling trajectory: some prompt+seed combinations collapse the
     # instrumental track to silence, and re-rolling the seed escapes that trajectory.
-    max_new_tokens = 2400
+    # ~2200 tokens -> ~22s of audio. Stage 2 splits this into three 6s segments, which
+    # fit in one stage2_batch_size=3 pass on 8GB (one pass instead of two => faster),
+    # while still leaving margin to trim a clean 20s. (2400 -> 24s -> 4 segments needs
+    # batch 4 for a single pass, which OOMs on 8GB.)
+    max_new_tokens = 2200
     raw_wav = run_yue_inference(
         genre_txt=genre_txt,
         lyrics_txt=lyrics_txt,

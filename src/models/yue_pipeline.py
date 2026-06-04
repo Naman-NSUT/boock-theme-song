@@ -158,6 +158,7 @@ def run_yue_inference(
     run_n_segments: int = 1,
     max_new_tokens: int = 1500,
     seed: int = 42,
+    stage2_batch_size: int = 3,
 ) -> str:
     """
     Run YuE inference and return path to the generated full_mix WAV.
@@ -189,7 +190,7 @@ def run_yue_inference(
         "--genre_txt", genre_txt,
         "--lyrics_txt", lyrics_txt,
         "--run_n_segments", str(run_n_segments),
-        "--stage2_batch_size", "2",
+        "--stage2_batch_size", str(stage2_batch_size),
         "--output_dir", output_dir,
         "--max_new_tokens", str(max_new_tokens),
         "--repetition_penalty", "1.1",
@@ -209,6 +210,10 @@ def run_yue_inference(
         os.path.join(YUE_INFER_DIR, "xcodec_mini_infer", "descriptaudiocodec") + os.pathsep +
         env.get("PYTHONPATH", "")
     )
+    # Reclaim fragmented VRAM so the larger stage-2 batch fits on 8GB. At batch_size=4
+    # the run OOM'd by only ~82MB while ~945MB sat reserved-but-unallocated (fragmentation);
+    # expandable_segments defragments the allocator and lets the faster batch run.
+    env["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
     result = subprocess.run(cmd, capture_output=False, text=True, env=env, cwd=YUE_INFER_DIR)
     if result.returncode != 0:
